@@ -1,0 +1,48 @@
+<app-page-header [title]="isEdit() ? 'Edit analysis' : 'New analysis'"
+  [subtitle]="isEdit() ? 'Update the analysis parameters' : 'Run a new pay equity analysis'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Analysis period *</label>
+          <input class="form-control" formControlName="analysisPeriod" [class.is-invalid]="invalid('analysisPeriod')" placeholder="e.g. 2026-Q2" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Dimension *</label>
+          <select class="form-select" formControlName="dimension">
+            @for (d of dimensions; track d) { <option [value]="d">{{ d | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label d-block">Control variables *</label>
+          @for (v of controlVariables; track v) {
+            <div class="form-check form-check-inline">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [id]="'cv-' + v"
+                [checked]="isSelected(v)"
+                (change)="toggleControlVariable(v)"
+              />
+              <label class="form-check-label" [for]="'cv-' + v">{{ v | enumLabel }}</label>
+            </div>
+          }
+          @if (controlVariablesInvalid()) {
+            <div class="text-danger small mt-1">Select at least one control variable.</div>
+          }
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create analysis' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

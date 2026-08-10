@@ -1,0 +1,8 @@
+package com.deiconnect.notification.service;
+
+public class NotificationDeliveryException extends RuntimeException {
+
+    public NotificationDeliveryException(String message) {
+        super(message);
+    }
+}

@@ -1,0 +1,139 @@
+<app-page-header title="ERG details">
+  <a routerLink="/ergs" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+  @if (canManage()) {
+    <a [routerLink]="['/ergs', id(), 'edit']" class="btn btn-primary">
+      <i class="bi bi-pencil me-1"></i> Edit
+    </a>
+  }
+  @if (canViewMembers()) {
+    <a [routerLink]="['/ergs', id(), 'members']" class="btn btn-outline-secondary">
+      <i class="bi bi-people me-1"></i> Members
+    </a>
+  }
+  @if (canManage()) {
+    <button *appHasRole="['DEI_MANAGER', 'ADMIN']" class="btn btn-outline-danger" (click)="askDelete()">
+      <i class="bi bi-trash me-1"></i> Delete
+    </button>
+  }
+</app-page-header>
+
+@if (erg(); as e) {
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-people-fill"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ e.ergName }}</h2>
+          <span class="text-muted">{{ e.focus | enumLabel }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="e.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Mission</dt><dd class="col-sm-9">{{ e.mission || '—' }}</dd>
+        <dt class="col-sm-3">Members</dt><dd class="col-sm-9">{{ e.memberCount }}</dd>
+        <dt class="col-sm-3">Founded date</dt><dd class="col-sm-9">{{ (e.foundedDate | date) || '—' }}</dd>
+        <dt class="col-sm-3">Executive sponsor ID</dt><dd class="col-sm-9">{{ e.executiveSponsorId ?? '—' }}</dd>
+        <dt class="col-sm-3">ERG lead ID</dt><dd class="col-sm-9">{{ e.ergLeadId }}</dd>
+        <dt class="col-sm-3">Created by</dt><dd class="col-sm-9">{{ e.creatorManagerName || '—' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4" *appHasRole="['EMPLOYEE']">
+    <div class="card-body">
+      <h3 class="h5 mb-3">My membership</h3>
+      @if (membershipLoaded()) {
+        @if (isActiveMember()) {
+          <p class="mb-3">You are an active member of this group.</p>
+          <button class="btn btn-outline-danger" [disabled]="membershipBusy()" (click)="leave()">
+            <i class="bi bi-box-arrow-right me-1"></i> Leave group
+          </button>
+        } @else {
+          <p class="mb-3 text-muted">You are not currently a member of this group.</p>
+          <button class="btn btn-primary" [disabled]="membershipBusy()" (click)="join()">
+            <i class="bi bi-box-arrow-in-right me-1"></i> Join group
+          </button>
+        }
+      }
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="h5 mb-0">Events</h3>
+        <a *appHasRole="['ERG_LEAD']" [routerLink]="['/ergs', id(), 'events', 'new']" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i> New event
+        </a>
+      </div>
+
+      @if (canViewEvents()) {
+        @if (eventsPage(); as ep) {
+        @if (ep.content.length === 0) {
+          <app-empty-state title="No events scheduled" icon="bi-calendar-event"></app-empty-state>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Event</th><th>Type</th><th>Date</th><th>Attendees</th>
+                  <th>Budget spent</th><th>Status</th><th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (ev of ep.content; track ev.eventId) {
+                  <tr>
+                    <td>{{ ev.eventName }}</td>
+                    <td>{{ ev.eventType | enumLabel }}</td>
+                    <td>{{ ev.date | date }}</td>
+                    <td>{{ ev.attendeeCount ?? '—' }}</td>
+                    <td>{{ ev.budgetSpent != null ? (ev.budgetSpent | number: '1.0-2') : '—' }}</td>
+                    <td><app-status-badge [status]="ev.status"></app-status-badge></td>
+                    <td class="text-end">
+                      <a [routerLink]="['/ergs', id(), 'events', ev.eventId]" class="btn btn-sm btn-outline-secondary">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          <app-paginator
+            [page]="ep.number" [totalPages]="ep.totalPages" [totalElements]="ep.totalElements"
+            (pageChange)="reloadEvents($event)"
+          ></app-paginator>
+        }
+        }
+      } @else {
+        <p class="text-muted mb-0">
+          <i class="bi bi-info-circle me-1"></i> Join this group to view and register for its events.
+        </p>
+      }
+    </div>
+  </div>
+}
+
+@if (notFound() && !erg()) {
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <app-empty-state
+        title="Group not available"
+        message="This ERG group doesn't exist or isn't available to you. You can only view groups run by your manager or organisation-wide groups."
+        icon="bi-lock"
+      >
+        <a routerLink="/ergs" class="btn btn-outline-primary"><i class="bi bi-arrow-left me-1"></i> Back to groups</a>
+      </app-empty-state>
+    </div>
+  </div>
+}
+
+<app-confirm-modal
+  [open]="confirmingDelete()"
+  title="Delete ERG"
+  [message]="'Delete ' + (erg()?.ergName || 'this group') + '? This cannot be undone.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="confirmingDelete.set(false)"
+></app-confirm-modal>

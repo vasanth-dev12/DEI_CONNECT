@@ -1,0 +1,79 @@
+<app-page-header title="Respond to survey" [subtitle]="survey()?.surveyName || ''">
+  <a routerLink="/surveys" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</app-page-header>
+
+@if (survey(); as s) {
+  @if (s.respondedByMe) {
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <app-empty-state
+          title="You have already completed this survey"
+          message="Your response was recorded. Because responses are anonymous they cannot be retrieved or changed afterwards."
+          icon="bi-check2-circle"
+        >
+          <a routerLink="/surveys" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i> Back to surveys
+          </a>
+        </app-empty-state>
+      </div>
+    </div>
+  } @else {
+    <div class="alert alert-info">
+      <i class="bi bi-shield-lock me-1"></i> Your responses are anonymous and cannot be traced back to you.
+    </div>
+
+    @if (orderedQuestions().length === 0) {
+      <app-empty-state title="No questions to answer" icon="bi-clipboard-check"></app-empty-state>
+    } @else {
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+            <div formArrayName="answers">
+            @for (q of orderedQuestions(); track q.questionId; let i = $index) {
+              <div class="mb-4" [formGroupName]="i">
+                <label class="form-label fw-semibold">
+                  {{ i + 1 }}. {{ q.questionText }}
+                  @if (q.mandatory) { <span class="text-danger">*</span> }
+                </label>
+
+                @if (q.questionType === 'LIKERT_SCALE') {
+                  <div class="d-flex gap-3 flex-wrap">
+                    @for (v of likertValues; track v) {
+                      <div class="form-check">
+                        <input type="radio" class="form-check-input" [id]="'q' + q.questionId + '_' + v" formControlName="numericValue" [value]="v" />
+                        <label class="form-check-label" [for]="'q' + q.questionId + '_' + v">{{ v }}</label>
+                      </div>
+                    }
+                  </div>
+                  <div class="form-text">1 = Strongly disagree, 5 = Strongly agree</div>
+                } @else {
+                  <div class="d-flex gap-3">
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" [id]="'q' + q.questionId + '_yes'" formControlName="numericValue" [value]="1" />
+                      <label class="form-check-label" [for]="'q' + q.questionId + '_yes'">Yes</label>
+                    </div>
+                    <div class="form-check">
+                      <input type="radio" class="form-check-input" [id]="'q' + q.questionId + '_no'" formControlName="numericValue" [value]="0" />
+                      <label class="form-check-label" [for]="'q' + q.questionId + '_no'">No</label>
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+            </div>
+
+            <div class="mt-3">
+              <button type="submit" class="btn btn-primary" [disabled]="saving()">
+                @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Submit responses
+              </button>
+              <div class="form-text mt-2">
+                You can only submit once — your answers cannot be changed afterwards.
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+  }
+}

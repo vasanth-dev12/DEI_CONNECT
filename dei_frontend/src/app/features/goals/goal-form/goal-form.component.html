@@ -1,0 +1,58 @@
+<app-page-header [title]="isEdit() ? 'Edit goal' : 'New goal'"
+  [subtitle]="isEdit() ? 'Update goal targets and status' : 'Define a new DEI goal'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Goal name *</label>
+          <input class="form-control" formControlName="goalName" [class.is-invalid]="invalid('goalName')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Dimension *</label>
+          <select class="form-select" formControlName="dimension">
+            @for (d of dimensions; track d) { <option [value]="d">{{ d | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Target group</label>
+          <input class="form-control" formControlName="targetGroup" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Owner</label>
+          <input class="form-control" [value]="ownerName()" readonly disabled />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Baseline value *</label>
+          <input type="number" class="form-control" formControlName="baselineValue" [class.is-invalid]="invalid('baselineValue')" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Target value *</label>
+          <input type="number" class="form-control" formControlName="targetValue" [class.is-invalid]="invalid('targetValue')" />
+        </div>
+        <div class="col-md-4">
+          <label class="form-label">Target year *</label>
+          <input type="number" class="form-control" formControlName="targetYear" [class.is-invalid]="invalid('targetYear')" />
+        </div>
+        @if (isEdit()) {
+          <div class="col-md-6">
+            <label class="form-label">Status *</label>
+            <select class="form-select" formControlName="status">
+              @for (s of statuses; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create goal' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

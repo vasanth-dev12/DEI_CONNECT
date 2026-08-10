@@ -1,0 +1,73 @@
+<div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-4">
+  <div class="col">
+    <app-stat-card
+      label="Total Users" [value]="totalUsers()" icon="bi-people" color="primary" link="/users"
+      hint="All roles"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Employees" [value]="employeeCount()" icon="bi-person" color="secondary" link="/users"
+      [queryParams]="{ role: 'EMPLOYEE' }"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Managers" [value]="managerCount()" icon="bi-person-badge" color="info" link="/users"
+      [queryParams]="{ role: 'DEI_MANAGER' }"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="HR Partners" [value]="hrCount()" icon="bi-person-vcard" color="success" link="/users"
+      [queryParams]="{ role: 'HR_BIZ_PARTNER' }"
+    ></app-stat-card>
+  </div>
+
+  <div class="col">
+    <app-stat-card
+      label="ERG Leads" [value]="ergLeadCount()" icon="bi-person-gear" color="danger" link="/users"
+      [queryParams]="{ role: 'ERG_LEAD' }"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Executives" [value]="executiveCount()" icon="bi-person-workspace" color="dark" link="/users"
+      [queryParams]="{ role: 'EXECUTIVE' }"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Surveys" [value]="totalSurveys()" icon="bi-clipboard-data" color="warning" link="/surveys"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="ERG Groups" [value]="totalErgs()" icon="bi-diagram-3" color="danger" link="/ergs"
+    ></app-stat-card>
+  </div>
+
+  <div class="col">
+    <app-stat-card
+      label="Representation Snapshots" [value]="totalSnapshots()" icon="bi-bar-chart-steps"
+      color="info" link="/diversity/snapshots" hint="Demographic aggregates"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Pay Equity" [value]="totalAnalyses()" icon="bi-cash-coin" color="success"
+      link="/pay-equity/analyses" hint="Gap analyses"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Reports" [value]="totalReports()" icon="bi-file-earmark-bar-graph" color="primary" link="/reports"
+    ></app-stat-card>
+  </div>
+  <div class="col">
+    <app-stat-card
+      label="Audit Logs" value="View" icon="bi-journal-text" color="dark" link="/audit-logs"
+      hint="System activity trail"
+    ></app-stat-card>
+  </div>
+</div>

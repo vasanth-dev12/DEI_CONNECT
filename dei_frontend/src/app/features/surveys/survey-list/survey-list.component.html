@@ -1,0 +1,109 @@
+<app-page-header title="Surveys" subtitle="Pulse checks, onboarding and annual sentiment surveys">
+  <a *appHasRole="['ADMIN']" routerLink="/surveys/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New survey
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of allStatuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No surveys found" icon="bi-clipboard-data"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Name</th><th>Type</th><th>Status</th><th>Launch date</th>
+                <th>Close date</th><th>Questions</th><th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of p.content; track s.surveyId) {
+                <tr>
+                  <td>{{ s.surveyName }}</td>
+                  <td>{{ s.surveyType | enumLabel }}</td>
+                  <td>
+                    <app-status-badge [status]="s.status"></app-status-badge>
+                    @if (s.respondedByMe) {
+                      <span class="badge rounded-pill text-bg-success ms-1">
+                        <i class="bi bi-check-lg me-1"></i>Completed
+                      </span>
+                    } @else if (isEmployee && s.status === 'ACTIVE') {
+                      <span class="badge rounded-pill text-bg-warning ms-1">Awaiting your response</span>
+                    }
+                  </td>
+                  <td>{{ s.launchDate | date: 'mediumDate' }}</td>
+                  <td>{{ s.closeDate | date: 'mediumDate' }}</td>
+                  <td>{{ s.questions?.length ?? 0 }}</td>
+                  <td class="text-end">
+                    <a [routerLink]="['/surveys', s.surveyId]" class="btn btn-sm btn-outline-secondary me-1" title="View">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a *appHasRole="['DEI_MANAGER', 'ADMIN']" [routerLink]="['/surveys', s.surveyId, 'questions']" class="btn btn-sm btn-outline-secondary me-1" title="Questions">
+                      <i class="bi bi-list-check"></i>
+                    </a>
+                    <a *appHasRole="['DEI_MANAGER', 'EXECUTIVE', 'ADMIN']" [routerLink]="['/surveys', s.surveyId, 'summaries']" class="btn btn-sm btn-outline-secondary me-1" title="Summaries">
+                      <i class="bi bi-bar-chart"></i>
+                    </a>
+                    @if (isEmployee && s.status === 'ACTIVE' && !s.respondedByMe) {
+                      <a [routerLink]="['/surveys', s.surveyId, 'respond']" class="btn btn-sm btn-outline-primary me-1" title="Respond">
+                        <i class="bi bi-pencil-square"></i>
+                      </a>
+                    }
+                    @if (canManage()) {
+                      @if (s.status === 'DRAFT') {
+                        <button class="btn btn-sm btn-outline-success me-1" title="Launch" (click)="launch(s)">
+                          <i class="bi bi-play-fill"></i>
+                        </button>
+                        <a [routerLink]="['/surveys', s.surveyId, 'edit']" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                          <i class="bi bi-pencil"></i>
+                        </a>
+                        <button class="btn btn-sm btn-outline-danger me-1" title="Delete" (click)="askDelete(s)">
+                          <i class="bi bi-trash"></i>
+                        </button>
+                      }
+                      @if (s.status === 'ACTIVE') {
+                        <button class="btn btn-sm btn-outline-warning me-1" title="Close" (click)="close(s)">
+                          <i class="bi bi-stop-fill"></i>
+                        </button>
+                      }
+                      @if (s.status === 'CLOSED') {
+                        <button class="btn btn-sm btn-outline-success me-1" title="Publish" (click)="publish(s)">
+                          <i class="bi bi-megaphone"></i>
+                        </button>
+                      }
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>
+
+<app-confirm-modal
+  [open]="!!toDelete()"
+  title="Delete survey"
+  [message]="'Delete ' + (toDelete()?.surveyName || '') + '? This cannot be undone.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="toDelete.set(null)"
+></app-confirm-modal>

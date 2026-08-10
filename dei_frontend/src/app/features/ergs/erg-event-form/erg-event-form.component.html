@@ -1,0 +1,50 @@
+<app-page-header [title]="isEdit() ? 'Edit event' : 'New event'"
+  [subtitle]="isEdit() ? 'Update this ERG event' : 'Schedule a new ERG event'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Event name *</label>
+          <input class="form-control" formControlName="eventName" [class.is-invalid]="invalid('eventName')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Event type *</label>
+          <select class="form-select" formControlName="eventType">
+            @for (t of eventTypes; track t) { <option [value]="t">{{ t | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Date *</label>
+          <input type="date" class="form-control" formControlName="date" [class.is-invalid]="invalid('date')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Attendee count</label>
+          <input type="number" min="0" class="form-control" formControlName="attendeeCount" [class.is-invalid]="invalid('attendeeCount')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Budget spent</label>
+          <input type="number" min="0" step="0.01" class="form-control" formControlName="budgetSpent" [class.is-invalid]="invalid('budgetSpent')" />
+        </div>
+        @if (isEdit()) {
+          <div class="col-md-6">
+            <label class="form-label">Status *</label>
+            <select class="form-select" formControlName="status">
+              @for (s of eventStatuses; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create event' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

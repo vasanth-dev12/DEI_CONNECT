@@ -1,0 +1,82 @@
+<app-page-header title="ERG Groups" subtitle="Employee resource groups across the organisation">
+  <a *appHasRole="['DEI_MANAGER']" routerLink="/ergs/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New group
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="focusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All focuses</option>
+          @for (f of allFocuses; track f) { <option [ngValue]="f">{{ f | enumLabel }}</option> }
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of allStatuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No ERG groups found" icon="bi-people-fill"></app-empty-state>
+      } @else {
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+          @for (e of p.content; track e.ergId) {
+            <div class="col">
+              <div class="card h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                  <div class="d-flex justify-content-between align-items-start mb-2">
+                    <h3 class="h5 mb-0">{{ e.ergName }}</h3>
+                    <app-status-badge [status]="e.status"></app-status-badge>
+                  </div>
+                  <span class="badge text-bg-info align-self-start mb-2">{{ e.focus | enumLabel }}</span>
+                  <p class="text-muted small flex-grow-1">
+                    {{ (e.mission | slice: 0:140) || 'No mission statement provided.' }}{{ (e.mission?.length || 0) > 140 ? '…' : '' }}
+                  </p>
+                  <p class="small mb-3"><i class="bi bi-people me-1"></i>{{ e.memberCount }} member(s)</p>
+                  <div class="mt-auto d-flex gap-2">
+                    <a [routerLink]="['/ergs', e.ergId]" class="btn btn-outline-primary flex-grow-1">
+                      <i class="bi bi-eye me-1"></i> View
+                    </a>
+                    @if (canViewMembers(e)) {
+                      <a [routerLink]="['/ergs', e.ergId, 'members']" class="btn btn-outline-secondary" title="Members">
+                        <i class="bi bi-people"></i>
+                      </a>
+                    }
+                    @if (canManage(e)) {
+                      <a [routerLink]="['/ergs', e.ergId, 'edit']" class="btn btn-outline-secondary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button *appHasRole="['DEI_MANAGER', 'ADMIN']" class="btn btn-outline-danger" title="Delete" (click)="askDelete(e)">
+                        <i class="bi bi-trash"></i>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>
+
+<app-confirm-modal
+  [open]="!!toDelete()"
+  title="Delete ERG"
+  [message]="'Delete ' + (toDelete()?.ergName || 'this group') + '? This cannot be undone.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="toDelete.set(null)"
+></app-confirm-modal>

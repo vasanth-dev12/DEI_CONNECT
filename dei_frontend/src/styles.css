@@ -1,0 +1,73 @@
+:root {
+  --dei-primary: #1b3a6b;
+  --dei-accent: #0d9488;
+  --dei-sidebar-bg: #0f2545;
+  --dei-sidebar-fg: #cdd7e5;
+  --dei-sidebar-active: #1b3a6b;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  background-color: #f4f6f9;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+.app-shell { height: 100vh; overflow: hidden; }
+.app-sidebar {
+  background: var(--dei-sidebar-bg);
+  color: var(--dei-sidebar-fg);
+  width: 250px;
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+.app-sidebar .nav-link {
+  color: var(--dei-sidebar-fg);
+  border-radius: .375rem;
+  margin: 2px 8px;
+  padding: .55rem .85rem;
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+}
+.app-sidebar .nav-link:hover { background: rgba(255, 255, 255, .08); color: #fff; }
+.app-sidebar .nav-link.active { background: var(--dei-accent); color: #fff; }
+.app-content { flex: 1 1 auto; min-width: 0; height: 100vh; }
+.app-content > main { min-height: 0; overflow-y: auto; }
+
+.table-scroll { max-height: 60vh; overflow-y: auto; }
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--bs-body-bg, #fff);
+}
+
+.brand-badge {
+  background: var(--dei-accent);
+  color: #fff;
+  font-weight: 700;
+  border-radius: .5rem;
+  padding: .2rem .55rem;
+}
+
+.stat-card { border: none; border-left: 4px solid var(--dei-accent); }
+.stat-card .stat-value { font-size: 1.9rem; font-weight: 700; }
+
+.cursor-pointer { cursor: pointer; }
+.table-hover tbody tr { cursor: default; }
+
+.page-title { color: var(--dei-primary); font-weight: 700; }
+
+.toast-stack {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1090;
+  width: min(360px, 90vw);
+}
+
+@media (max-width: 991.98px) {
+  .app-sidebar { width: 100%; min-height: auto; }
+}

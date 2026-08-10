@@ -1,0 +1,21 @@
+<div class="app-sidebar d-flex flex-column py-3">
+  <div class="px-3 mb-3 d-flex align-items-center gap-2">
+    <span class="brand-badge">DEI</span>
+    <span class="fw-bold text-white">Connect</span>
+  </div>
+  <ul class="nav nav-pills flex-column mb-auto">
+    @for (item of visibleItems(); track item.route) {
+      <li class="nav-item">
+        <a
+          class="nav-link"
+          [routerLink]="item.route"
+          routerLinkActive="active"
+          (click)="navigate.emit()"
+        >
+          <i class="bi {{ item.icon }}"></i>
+          <span>{{ item.label }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</div>

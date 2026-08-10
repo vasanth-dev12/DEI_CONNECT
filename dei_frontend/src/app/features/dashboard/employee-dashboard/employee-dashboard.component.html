@@ -1,0 +1,49 @@
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Surveys Awaiting You" [value]="awaitingResponse().length" icon="bi-clipboard-check" color="primary" link="/surveys"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Surveys Completed" [value]="completedCount()" icon="bi-check2-circle" color="success" link="/surveys"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Available Groups" [value]="totalErgs()" icon="bi-diagram-3" color="info" link="/ergs"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Unread Notifications" [value]="unreadNotifications()" icon="bi-bell" color="warning" link="/notifications"
+    ></app-stat-card>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-transparent">Active Surveys</div>
+  <div class="card-body">
+    @if (activeSurveys().length === 0) {
+      <app-empty-state title="No active surveys" icon="bi-clipboard-check"></app-empty-state>
+    } @else {
+      <ul class="list-group list-group-flush">
+        @for (s of activeSurveys(); track s.surveyId) {
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <div>
+              <div class="fw-semibold">{{ s.surveyName }}</div>
+              <div class="small text-muted">{{ s.surveyType | enumLabel }}</div>
+            </div>
+            @if (s.respondedByMe) {
+              <span class="badge rounded-pill text-bg-success">
+                <i class="bi bi-check-lg me-1"></i>Completed
+              </span>
+            } @else {
+              <a [routerLink]="['/surveys', s.surveyId, 'respond']" class="btn btn-sm btn-primary">Respond</a>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </div>
+</div>

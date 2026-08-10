@@ -1,0 +1,51 @@
+<app-page-header [title]="isEdit() ? 'Edit survey' : 'New survey'"
+  [subtitle]="isEdit() ? 'Update survey details (only while in draft)' : 'Create a new survey'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Survey name *</label>
+          <input class="form-control" formControlName="surveyName" [class.is-invalid]="invalid('surveyName')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Survey type *</label>
+          <select class="form-select" formControlName="surveyType">
+            @for (t of surveyTypes; track t) { <option [value]="t">{{ t | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Launch date</label>
+          <input type="date" class="form-control" formControlName="launchDate" [min]="today" [class.is-invalid]="invalid('launchDate')" />
+          @if (invalid('launchDate')) { <div class="text-danger small">Launch date cannot be in the past.</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Close date</label>
+          <input type="date" class="form-control" formControlName="closeDate" [min]="today" [class.is-invalid]="invalid('closeDate') || dateRangeInvalid()" />
+          @if (invalid('closeDate')) { <div class="text-danger small">Close date cannot be in the past.</div> }
+          @if (dateRangeInvalid()) { <div class="text-danger small">Close date must be on or after the launch date.</div> }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Minimum response threshold *</label>
+          <input type="number" min="1" class="form-control" formControlName="minResponseThreshold" [class.is-invalid]="invalid('minResponseThreshold')" />
+        </div>
+        <div class="col-12">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="anonymised" formControlName="anonymised" />
+            <label class="form-check-label" for="anonymised">Anonymised responses</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create survey' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

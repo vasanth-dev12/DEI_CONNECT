@@ -1,0 +1,92 @@
+<app-page-header
+  title="My Demographic Profile"
+  subtitle="Voluntary self-identification data used to measure representation"
+></app-page-header>
+
+<div class="alert alert-info d-flex" role="alert">
+  <i class="bi bi-info-circle-fill me-2"></i>
+  <div>
+    Sharing this information is entirely <strong>voluntary</strong> and requires your consent. It is used only
+    in aggregated, anonymised representation reporting. Every question offers
+    <strong>Prefer not to say</strong>, so you never have to disclose anything you would rather not.
+    You may withdraw your consent at any time by setting <strong>Consent status</strong> to
+    <strong>Declined</strong>; your previously shared details will no longer be used for reporting purposes.
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Gender *</label>
+          <select class="form-select" formControlName="gender" [class.is-invalid]="isFormControlInvalid('gender')">
+            @for (genderOption of availableGenders; track genderOption) {
+              <option [value]="genderOption">{{ genderOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Choose an option, or "Prefer not to say".</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Ethnicity *</label>
+          <select class="form-select" formControlName="ethnicity" [class.is-invalid]="isFormControlInvalid('ethnicity')">
+            @for (ethnicityOption of availableEthnicities; track ethnicityOption) {
+              <option [value]="ethnicityOption">{{ ethnicityOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Choose an option, or "Prefer not to say".</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Disability status *</label>
+          <select class="form-select" formControlName="disability" [class.is-invalid]="isFormControlInvalid('disability')">
+            @for (disabilityOption of availableDisabilityStatuses; track disabilityOption) {
+              <option [value]="disabilityOption">{{ disabilityOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Choose an option, or "Prefer not to say".</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Veteran status *</label>
+          <select class="form-select" formControlName="veteranStatus" [class.is-invalid]="isFormControlInvalid('veteranStatus')">
+            @for (veteranOption of availableVeteranStatuses; track veteranOption) {
+              <option [value]="veteranOption">{{ veteranOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Choose an option, or "Prefer not to say".</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Age group *</label>
+          <select class="form-select" formControlName="ageGroup" [class.is-invalid]="isFormControlInvalid('ageGroup')">
+            @for (ageGroupOption of availableAgeGroups; track ageGroupOption) {
+              <option [value]="ageGroupOption">{{ ageGroupOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="invalid-feedback">Choose an age band, or "Prefer not to say".</div>
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Consent status *</label>
+          <select class="form-select" formControlName="consentStatus" [class.is-invalid]="isFormControlInvalid('consentStatus')">
+            @for (consentOption of availableConsentStatuses; track consentOption) {
+              <option [value]="consentOption">{{ consentOption | enumLabel }}</option>
+            }
+          </select>
+          <div class="form-text">Only <strong>Consented</strong> profiles are counted in representation reporting.</div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+          @if (isSaving()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          }
+          {{ isProfileExisting() ? 'Save changes' : 'Submit profile' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

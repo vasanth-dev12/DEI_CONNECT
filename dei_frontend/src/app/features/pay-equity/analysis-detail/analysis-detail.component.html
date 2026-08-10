@@ -1,0 +1,115 @@
+<app-page-header title="Analysis details">
+  <a routerLink="/pay-equity/analyses" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+  @if (analysis()?.status === 'DRAFT') {
+    <button *appHasRole="['HR_BIZ_PARTNER', 'ADMIN']" class="btn btn-outline-primary" (click)="compute()" [disabled]="computing()">
+      @if (computing()) { <span class="spinner-border spinner-border-sm me-1"></span> }
+      <i class="bi bi-calculator me-1"></i> Compute from workforce data
+    </button>
+    <a *appHasRole="['HR_BIZ_PARTNER']" [routerLink]="['/pay-equity/analyses', id(), 'edit']" class="btn btn-primary">
+      <i class="bi bi-pencil me-1"></i> Edit
+    </a>
+    <button *appHasRole="['HR_BIZ_PARTNER']" class="btn btn-success" (click)="publish()">
+      <i class="bi bi-send me-1"></i> Publish
+    </button>
+  }
+</app-page-header>
+
+@if (analysis(); as a) {
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-cash-coin"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ a.analysisPeriod }}</h2>
+          <span class="text-muted">{{ a.dimension | enumLabel }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="a.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Control variables</dt><dd class="col-sm-9">{{ controlVariablesLabel(a) }}</dd>
+        <dt class="col-sm-3">Median gap %</dt><dd class="col-sm-9">{{ a.medianGapPercent === null ? '—' : (a.medianGapPercent | number: '1.0-2') + '%' }}</dd>
+        <dt class="col-sm-3">Adjusted gap %</dt><dd class="col-sm-9">{{ a.adjustedGapPercent === null ? '—' : (a.adjustedGapPercent | number: '1.0-2') + '%' }}</dd>
+        <dt class="col-sm-3">Significance level</dt><dd class="col-sm-9">{{ a.significanceLevel === null ? '—' : (a.significanceLevel | number: '1.0-3') }}</dd>
+        <dt class="col-sm-3">Run by</dt><dd class="col-sm-9">{{ a.runByName || '—' }}</dd>
+        <dt class="col-sm-3">Created</dt><dd class="col-sm-9">{{ a.createdDate | date: 'medium' }}</dd>
+        <dt class="col-sm-3">Last modified</dt><dd class="col-sm-9">{{ a.lastModifiedDate | date: 'medium' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <h3 class="h5 mb-3">Pay gap flags</h3>
+
+      @if (flags(); as fl) {
+        @if (fl.length === 0) {
+          <app-empty-state title="No pay gap flags recorded yet" icon="bi-flag"></app-empty-state>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Group</th><th>Gap %</th><th>Affected Employees</th>
+                  <th>Remediation Owner</th><th>Status</th><th class="text-end">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of fl; track f.id) {
+                  <tr>
+                    <td>{{ f.groupName }}</td>
+                    <td>{{ f.gapPercent | number: '1.0-2' }}%</td>
+                    <td>{{ f.affectedEmployeeCount }}</td>
+                    <td>{{ f.remediationOwnerName || '—' }}</td>
+                    <td><app-status-badge [status]="f.status"></app-status-badge></td>
+                    <td class="text-end">
+                      <ng-container *appHasRole="['HR_BIZ_PARTNER']">
+                        <button class="btn btn-sm btn-outline-primary" (click)="startRemediate(f)">
+                          <i class="bi bi-wrench-adjustable me-1"></i> Remediate
+                        </button>
+                      </ng-container>
+                    </td>
+                  </tr>
+                  @if (remediatingId() === f.id) {
+                    <tr>
+                      <td colspan="6">
+                        <form [formGroup]="remediateForm" (ngSubmit)="saveRemediate(f)" class="row g-2 align-items-end" novalidate>
+                          <div class="col-md-5">
+                            <label class="form-label small mb-0">Remediation owner *</label>
+                            <select class="form-select form-select-sm" formControlName="remediationOwnerId" [class.is-invalid]="remediateInvalid('remediationOwnerId')">
+                              <option [ngValue]="null" disabled>Select an owner…</option>
+                              @for (u of owners(); track u.userId) { <option [ngValue]="u.userId">{{ u.name }} ({{ u.employeeId }})</option> }
+                            </select>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label small mb-0">Status *</label>
+                            <select class="form-select form-select-sm" formControlName="status">
+                              @for (s of flagStatuses; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+                            </select>
+                          </div>
+                          <div class="col-md-3 text-end">
+                            <button type="submit" class="btn btn-sm btn-primary me-1" [disabled]="savingRemediate()">Save</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelRemediate()">Cancel</button>
+                          </div>
+                        </form>
+                      </td>
+                    </tr>
+                  }
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+
+    </div>
+  </div>
+
+  @if (a.status === 'DRAFT') {
+    <div class="alert alert-info" *appHasRole="['HR_BIZ_PARTNER', 'ADMIN']">
+      <i class="bi bi-info-circle me-1"></i>
+      Pay-gap flags are generated automatically from <strong>consented</strong> employees' salary and
+      years of experience. Click <strong>Compute from workforce data</strong> above to (re)generate them.
+      Only employees with a consented demographic profile and a recorded salary are included.
+    </div>
+  }
+}

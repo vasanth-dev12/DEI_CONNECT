@@ -1,0 +1,80 @@
+<app-page-header title="Reports" subtitle="DEI reports across scope, metrics and reporting period">
+  <a *appHasRole="['ADMIN']" routerLink="/reports/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New report
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of allStatuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No reports found" icon="bi-file-earmark-bar-graph"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Scope</th><th>Scope Value</th><th>Metrics</th>
+                <th>Generated Date</th><th>Status</th><th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (r of p.content; track r.id) {
+                <tr>
+                  <td>{{ r.scope | enumLabel }}</td>
+                  <td>{{ r.scopeValue || '—' }}</td>
+                  <td>
+                    @for (m of r.metrics; track m) {
+                      <span class="badge rounded-pill text-bg-light text-dark border me-1">{{ m | enumLabel }}</span>
+                    }
+                  </td>
+                  <td>{{ r.generatedDate | date: 'mediumDate' }}</td>
+                  <td><app-status-badge [status]="r.status"></app-status-badge></td>
+                  <td class="text-end">
+                    <a [routerLink]="['/reports', r.id]" class="btn btn-sm btn-outline-secondary me-1" title="View data">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    @if (r.status === 'DRAFT') {
+                      <a *appHasRole="['ADMIN']" [routerLink]="['/reports', r.id, 'edit']" class="btn btn-sm btn-outline-primary me-1" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button *appHasRole="['ADMIN']" class="btn btn-sm btn-outline-success me-1" title="Publish" (click)="publish(r)">
+                        <i class="bi bi-send"></i>
+                      </button>
+                    }
+                    <button *appHasRole="['ADMIN']" class="btn btn-sm btn-outline-danger" title="Delete" (click)="askDelete(r)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>
+
+<app-confirm-modal
+  [open]="!!toDelete()"
+  title="Delete report"
+  [message]="'Delete this ' + (toDelete()?.scope || '') + ' report? This cannot be undone.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="toDelete.set(null)"
+></app-confirm-modal>

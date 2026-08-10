@@ -1,0 +1,79 @@
+<app-page-header title="Pay Equity Analyses" subtitle="Raw analyses and pay gap flags you have run">
+  <a *appHasRole="['HR_BIZ_PARTNER']" routerLink="/pay-equity/analyses/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New analysis
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select" [(ngModel)]="dimensionFilter" (change)="reload(0)">
+          <option [ngValue]="null">All dimensions</option>
+          @for (d of dimensions; track d) { <option [ngValue]="d">{{ d | enumLabel }}</option> }
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of statuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-3" *appHasRole="['ADMIN']">
+        <select class="form-select" [(ngModel)]="hrIdFilter" (change)="reload(0)">
+          <option [ngValue]="null">All HR partners</option>
+          @for (u of hrUsers(); track u.userId) { <option [ngValue]="u.userId">{{ u.name }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No analyses found" icon="bi-cash-coin"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Period</th><th>Dimension</th><th>Control Variables</th><th>Median Gap %</th>
+                <th>Adjusted Gap %</th><th>Significance</th><th>Run By</th><th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of p.content; track a.id) {
+                <tr>
+                  <td>{{ a.analysisPeriod }}</td>
+                  <td>{{ a.dimension | enumLabel }}</td>
+                  <td>{{ controlVariablesLabel(a) }}</td>
+                  <td>{{ a.medianGapPercent === null ? '—' : (a.medianGapPercent | number: '1.0-2') + '%' }}</td>
+                  <td>{{ a.adjustedGapPercent === null ? '—' : (a.adjustedGapPercent | number: '1.0-2') + '%' }}</td>
+                  <td>{{ a.significanceLevel === null ? '—' : (a.significanceLevel | number: '1.0-3') }}</td>
+                  <td>{{ a.runByName || '—' }}</td>
+                  <td><app-status-badge [status]="a.status"></app-status-badge></td>
+                  <td class="text-end">
+                    <a [routerLink]="['/pay-equity/analyses', a.id]" class="btn btn-sm btn-outline-secondary me-1">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    @if (a.status === 'DRAFT') {
+                      <a *appHasRole="['HR_BIZ_PARTNER']" [routerLink]="['/pay-equity/analyses', a.id, 'edit']" class="btn btn-sm btn-outline-primary me-1">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button *appHasRole="['HR_BIZ_PARTNER']" class="btn btn-sm btn-outline-success" (click)="publish(a)">
+                        <i class="bi bi-send me-1"></i> Publish
+                      </button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<app-page-header title="Published Pay Equity" subtitle="Aggregated, organisation-wide pay equity analyses">
+</app-page-header>
+
+<p class="text-muted small">
+  Figures shown here are aggregated. Group-level details may be suppressed where the affected group is too small
+  to protect individual privacy.
+</p>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No published analyses found" icon="bi-cash-coin"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Period</th><th>Dimension</th><th>Control Variables</th><th>Median Gap %</th>
+                <th>Adjusted Gap %</th><th>Significance</th><th>Status</th><th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (a of p.content; track a.id) {
+                <tr>
+                  <td>{{ a.analysisPeriod }}</td>
+                  <td>{{ a.dimension | enumLabel }}</td>
+                  <td>{{ controlVariablesLabel(a) }}</td>
+                  <td>{{ a.medianGapPercent === null ? '—' : (a.medianGapPercent | number: '1.0-2') + '%' }}</td>
+                  <td>{{ a.adjustedGapPercent === null ? '—' : (a.adjustedGapPercent | number: '1.0-2') + '%' }}</td>
+                  <td>{{ a.significanceLevel === null ? '—' : (a.significanceLevel | number: '1.0-3') }}</td>
+                  <td><app-status-badge [status]="a.status"></app-status-badge></td>
+                  <td class="text-end">
+                    <a [routerLink]="['/pay-equity/published', a.id]" class="btn btn-sm btn-outline-secondary">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,10 @@
+<app-page-header title="Dashboard" [subtitle]="greeting()"></app-page-header>
+
+@switch (auth.role()) {
+  @case ('ADMIN') { <app-admin-dashboard></app-admin-dashboard> }
+  @case ('HR_BIZ_PARTNER') { <app-hr-dashboard></app-hr-dashboard> }
+  @case ('DEI_MANAGER') { <app-manager-dashboard></app-manager-dashboard> }
+  @case ('ERG_LEAD') { <app-erg-lead-dashboard></app-erg-lead-dashboard> }
+  @case ('EMPLOYEE') { <app-employee-dashboard></app-employee-dashboard> }
+  @case ('EXECUTIVE') { <app-executive-dashboard></app-executive-dashboard> }
+}

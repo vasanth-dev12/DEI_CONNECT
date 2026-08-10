@@ -1,0 +1,260 @@
+<app-page-header title="Representation Snapshots" subtitle="Aggregated, consent-based representation by dimension">
+  @if (!isGenerateModalOpen()) {
+    <button *appHasRole="['DEI_MANAGER']" class="btn btn-primary" (click)="isGenerateModalOpen.set(true)">
+      <i class="bi bi-plus-lg me-1"></i> Generate
+    </button>
+  }
+</app-page-header>
+
+@if (isGenerateModalOpen()) {
+  <div *appHasRole="['DEI_MANAGER']" class="card shadow-sm mb-3">
+    <div class="card-body">
+      <h2 class="h6 text-muted mb-3">Generate snapshot</h2>
+      <form [formGroup]="generateForm" (ngSubmit)="generateSnapshot()" novalidate>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <label class="form-label">Snapshot date</label>
+            <input type="text" class="form-control" [value]="defaultSnapshotDate | date: 'mediumDate'" readonly tabindex="-1" />
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Dimension *</label>
+            <select class="form-select" formControlName="dimension" [class.is-invalid]="isFormControlInvalid('dimension')">
+              @for (dimension of availableDimensions; track dimension) {
+                <option [value]="dimension">{{ dimension | enumLabel }}</option>
+              }
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">Department</label>
+            <select class="form-select" formControlName="departmentName">
+              <option [ngValue]="null">All departments</option>
+              @for (dept of availableDepartments; track dept) {
+                <option [ngValue]="dept">{{ dept | enumLabel }}</option>
+              }
+            </select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <button type="submit" class="btn btn-primary" [disabled]="isGenerating()">
+            @if (isGenerating()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Generate
+          </button>
+          <button type="button" class="btn btn-outline-secondary ms-2" (click)="isGenerateModalOpen.set(false)">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="dimensionFilter" (change)="reloadSnapshots(0)">
+          <option [ngValue]="null">All dimensions</option>
+          @for (dimension of availableDimensions; track dimension) {
+            <option [ngValue]="dimension">{{ dimension | enumLabel }}</option>
+          }
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="departmentFilter" (change)="reloadSnapshots(0)">
+          <option [ngValue]="null">All departments</option>
+          @for (dept of availableDepartments; track dept) {
+            <option [ngValue]="dept">{{ dept | enumLabel }}</option>
+          }
+        </select>
+      </div>
+      @if (!isPublishedOnlyView) {
+        <div class="col-sm-6 col-md-4">
+          <select class="form-select" [(ngModel)]="statusFilter" (change)="reloadSnapshots(0)">
+            <option [ngValue]="null">All statuses</option>
+            @for (status of availableStatuses; track status) {
+              <option [ngValue]="status">{{ status | enumLabel }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
+
+    @if (snapshotPage(); as pagedSnapshots) {
+      @if (pagedSnapshots.content.length === 0) {
+        <app-empty-state title="No snapshots found" icon="bi-bar-chart"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Date</th><th>Dimension</th><th>Department</th>
+                <th class="text-center">Head count</th>
+                <th>Diversity</th>
+                @if (!isPublishedOnlyView) { <th>Status</th> }
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (snapshot of pagedSnapshots.content; track snapshot.snapshotId) {
+                <tr>
+                  <td class="text-nowrap">{{ snapshot.snapshotDate | date: 'mediumDate' }}</td>
+                  <td class="fw-semibold text-nowrap">{{ snapshot.dimension | enumLabel }}</td>
+                  <td>{{ snapshot.departmentName ? (snapshot.departmentName | enumLabel) : 'All departments' }}</td>
+                  <td class="text-center">
+                    {{ snapshot.totalHeadCount }}
+                    @if (snapshot.totalConsidered > snapshot.totalHeadCount) {
+                      <div class="small text-muted">of {{ snapshot.totalConsidered }}</div>
+                    }
+                  </td>
+                  <td style="min-width: 260px">
+                    @for (group of snapshot.groups; track group.snapshotId) {
+                      @if (!group.suppressed && group.percentage !== null) {
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                          <span class="small text-nowrap" style="min-width: 8rem">{{ group.groupName | enumLabel }}</span>
+                          <div class="progress flex-grow-1" style="height: 8px">
+                            <div class="progress-bar" role="progressbar" [style.width.%]="group.percentage"></div>
+                          </div>
+                          <span class="small text-nowrap">{{ group.percentage | number: '1.0-2' }}%</span>
+                        </div>
+                      }
+                    }
+                    @if (snapshot.suppressedGroupCount > 0) {
+                      <span class="badge rounded-pill text-bg-secondary">
+                        {{ snapshot.suppressedGroupCount }} suppressed
+                      </span>
+                    }
+                  </td>
+                  @if (!isPublishedOnlyView) {
+                    <td><app-status-badge [status]="snapshot.status"></app-status-badge></td>
+                  }
+                  <td class="text-end text-nowrap">
+                    <button class="btn btn-sm btn-outline-secondary me-1" title="View charts" (click)="viewSnapshot(snapshot)">
+                      <i class="bi bi-pie-chart"></i>
+                    </button>
+                    @if (snapshot.status === 'DRAFT') {
+                      <button *appHasRole="['DEI_MANAGER']" class="btn btn-sm btn-outline-primary me-1" title="Publish" (click)="publishSnapshot(snapshot)">
+                        <i class="bi bi-send"></i>
+                      </button>
+                    }
+                    <button *appHasRole="['DEI_MANAGER', 'ADMIN']" class="btn btn-sm btn-outline-danger" title="Delete" (click)="openDeleteConfirmation(snapshot)">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="pagedSnapshots.number"
+          [totalPages]="pagedSnapshots.totalPages"
+          [totalElements]="pagedSnapshots.totalElements"
+          (pageChange)="reloadSnapshots($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>
+
+@if (selectedSnapshot(); as run) {
+  <div class="modal fade show d-block" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+      <div class="modal-content shadow">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            {{ run.dimension | enumLabel }} representation
+            <span class="text-muted fs-6">— {{ run.snapshotDate | date: 'mediumDate' }}</span>
+          </h5>
+          <button type="button" class="btn-close" (click)="closeViewModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3 mb-4">
+            <div class="col-sm-3">
+              <app-stat-card label="Shown" [value]="run.totalHeadCount" icon="bi-people" color="primary"></app-stat-card>
+            </div>
+            <div class="col-sm-3">
+              <app-stat-card label="Population" [value]="run.totalConsidered" icon="bi-people-fill" color="dark"
+                             hint="Consented employees covered, including withheld groups"></app-stat-card>
+            </div>
+            <div class="col-sm-3">
+              <app-stat-card label="Groups shown" [value]="run.groupCount" icon="bi-collection" color="info"></app-stat-card>
+            </div>
+            <div class="col-sm-3">
+              <app-stat-card label="Suppressed groups" [value]="run.suppressedGroupCount" icon="bi-shield-lock"
+                             [color]="run.suppressedGroupCount > 0 ? 'warning' : 'secondary'"></app-stat-card>
+            </div>
+          </div>
+
+          <dl class="row small mb-4">
+            <dt class="col-sm-3">Department</dt>
+            <dd class="col-sm-9">{{ run.departmentName ? (run.departmentName | enumLabel) : 'All departments' }}</dd>
+            @if (!isPublishedOnlyView) {
+              <dt class="col-sm-3">Status</dt>
+              <dd class="col-sm-9"><app-status-badge [status]="run.status"></app-status-badge></dd>
+            }
+          </dl>
+
+          @if (visibleChartGroups().length === 0) {
+            <app-empty-state
+              title="Nothing can be charted"
+              icon="bi-shield-lock"
+              message="Every group in this snapshot falls below the minimum group size, so no figures can be shown."
+            ></app-empty-state>
+          } @else {
+            <h3 class="h6 text-muted mb-3">Distribution</h3>
+            <table class="table table-sm align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Group</th><th class="text-center">Head count</th>
+                  <th style="min-width: 240px">Diversity</th><th class="text-end">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (group of visibleChartGroups(); track group.snapshotId) {
+                  <tr>
+                    <td>{{ group.groupName | enumLabel }}</td>
+                    <td class="text-center">{{ group.count }}</td>
+                    <td>
+                      <div class="progress" style="height: 10px" role="progressbar"
+                           [attr.aria-valuenow]="group.percentage" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" [style.width.%]="group.percentage"></div>
+                      </div>
+                    </td>
+                    <td class="text-end">{{ group.percentage | number: '1.0-2' }}%</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+
+          @if (run.suppressedGroupCount > 0) {
+            <p class="text-muted small mt-3 mb-0">
+              <i class="bi bi-shield-lock me-1"></i>
+              {{ run.suppressedGroupCount }} group(s) covering
+              {{ run.totalConsidered - run.totalHeadCount }} employee(s) are withheld because they fall
+              below the minimum group size. Percentages are still calculated over the full population
+              of {{ run.totalConsidered }}.
+            </p>
+          }
+        </div>
+        <div class="modal-footer">
+          @if (run.status === 'DRAFT') {
+            <button *appHasRole="['DEI_MANAGER']" type="button" class="btn btn-primary" (click)="publishSnapshot(run)">
+              <i class="bi bi-send me-1"></i> Publish snapshot
+            </button>
+          }
+          <button type="button" class="btn-outline-secondary btn" (click)="closeViewModal()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+}
+
+<app-confirm-modal
+  [open]="!!snapshotPendingDeletion()"
+  title="Delete snapshot"
+  [message]="'Delete the ' + (snapshotPendingDeletion()?.dimension || '') + ' snapshot for ' + (snapshotPendingDeletion()?.snapshotDate || '') + '? All of its groups are removed. Snapshots are derived data and can be regenerated.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="snapshotPendingDeletion.set(null)"
+></app-confirm-modal>

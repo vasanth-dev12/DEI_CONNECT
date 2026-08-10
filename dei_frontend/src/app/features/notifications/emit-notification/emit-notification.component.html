@@ -1,0 +1,57 @@
+<app-page-header title="Emit notification" subtitle="Send an in-app notification to an employee">
+  <button class="btn btn-outline-secondary" (click)="back()"><i class="bi bi-arrow-left me-1"></i> Back</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <p class="text-muted small">
+      Notifications are addressed by <strong>Employee ID</strong>, not by internal record ids. The recipient
+      will see it in their own Notifications inbox — delivery is verified before this form reports success.
+    </p>
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Recipient (Employee ID) *</label>
+          <select class="form-select" formControlName="employeeId" [class.is-invalid]="invalid('employeeId')">
+            <option value="">— Select an employee —</option>
+            @for (u of recipients(); track u.userId) {
+              <option [value]="u.employeeId">{{ recipientLabel(u) }}</option>
+            }
+          </select>
+          @if (invalid('employeeId')) {
+            <div class="invalid-feedback">Select the employee who should receive this notification.</div>
+          }
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Category *</label>
+          <select class="form-select" formControlName="category">
+            @for (c of categories; track c) { <option [value]="c">{{ c | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Message *</label>
+          <textarea class="form-control" rows="4" maxlength="500" formControlName="message" [class.is-invalid]="invalid('message')"></textarea>
+          <div class="form-text">{{ form.get('message')!.value?.length || 0 }} / 500</div>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          Send notification
+        </button>
+      </div>
+    </form>
+
+    @if (lastDelivered(); as receipt) {
+      <div class="alert alert-success mt-4 mb-0" role="alert">
+        <h3 class="h6 alert-heading"><i class="bi bi-check2-circle me-1"></i> Delivery confirmed</h3>
+        <ul class="mb-0 small">
+          <li>Notification <strong>#{{ receipt.notificationId }}</strong> was created.</li>
+          <li>Associated with employee <strong>{{ receipt.employeeId }}</strong>.</li>
+          <li>Status <strong>{{ receipt.status | enumLabel }}</strong> — it is now visible in that employee's notification list.</li>
+        </ul>
+      </div>
+    }
+  </div>
+</div>

@@ -1,0 +1,59 @@
+<app-page-header title="Audit Logs" subtitle="System-wide activity trail"></app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-4 col-md-3">
+        <input
+          type="number"
+          class="form-control"
+          placeholder="Filter by user ID"
+          [(ngModel)]="userIdFilter"
+          (change)="reload(0)"
+        />
+      </div>
+      <div class="col-sm-4 col-md-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Filter by entity type"
+          [(ngModel)]="entityTypeFilter"
+          (change)="reload(0)"
+        />
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No audit logs found" icon="bi-journal-text"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Audit ID</th><th>User ID</th><th>Action</th>
+                <th>Entity Type</th><th>Record ID</th><th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of p.content; track log.auditId) {
+                <tr>
+                  <td>{{ log.auditId }}</td>
+                  <td>{{ log.userId }}</td>
+                  <td>{{ log.action }}</td>
+                  <td>{{ log.entityType }}</td>
+                  <td>{{ log.recordId }}</td>
+                  <td>{{ log.timestamp | date: 'medium' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

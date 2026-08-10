@@ -1,0 +1,15 @@
+<div class="toast-stack">
+  @for (t of toastService.toasts(); track t.id) {
+    <div class="toast show align-items-center text-bg-{{ t.kind }} border-0 mb-2" role="alert">
+      <div class="d-flex">
+        <div class="toast-body">{{ t.message }}</div>
+        <button
+          type="button"
+          class="btn-close btn-close-white me-2 m-auto"
+          (click)="toastService.dismiss(t.id)"
+          aria-label="Close"
+        ></button>
+      </div>
+    </div>
+  }
+</div>

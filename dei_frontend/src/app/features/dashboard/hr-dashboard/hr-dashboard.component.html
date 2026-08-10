@@ -1,0 +1,43 @@
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-lg-4">
+    <app-stat-card
+      label="Assigned Employees" [value]="assignedEmployees()" icon="bi-people" color="primary" link="/users"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <app-stat-card
+      label="My Analyses" [value]="totalAnalyses()" icon="bi-cash-coin" color="info" link="/pay-equity"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-4">
+    <app-stat-card
+      label="Reports Available" [value]="totalReports()" icon="bi-file-earmark-bar-graph" color="success" link="/reports"
+    ></app-stat-card>
+  </div>
+</div>
+
+<div class="card shadow-sm">
+  <div class="card-header bg-transparent">Recent Pay Equity Analyses</div>
+  <div class="card-body">
+    @if (recentAnalyses().length === 0) {
+      <app-empty-state title="No analyses yet" icon="bi-cash-coin"></app-empty-state>
+    } @else {
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr><th>Period</th><th>Dimension</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            @for (a of recentAnalyses(); track a.id) {
+              <tr>
+                <td>{{ a.analysisPeriod }}</td>
+                <td>{{ a.dimension | enumLabel }}</td>
+                <td><app-status-badge [status]="a.status"></app-status-badge></td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>

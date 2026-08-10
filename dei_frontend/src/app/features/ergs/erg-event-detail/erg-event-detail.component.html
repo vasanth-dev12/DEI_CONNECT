@@ -1,0 +1,80 @@
+<app-page-header title="Event details">
+  <a [routerLink]="['/ergs', id()]" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+  <a *appHasRole="['ERG_LEAD']" [routerLink]="['/ergs', id(), 'events', eventId(), 'edit']" class="btn btn-primary">
+    <i class="bi bi-pencil me-1"></i> Edit event
+  </a>
+  <button *appHasRole="['ERG_LEAD']" class="btn btn-outline-danger" (click)="askDelete()">
+    <i class="bi bi-trash me-1"></i> Delete event
+  </button>
+</app-page-header>
+
+@if (event(); as ev) {
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-calendar-event"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ ev.eventName }}</h2>
+          <span class="text-muted">{{ ev.eventType | enumLabel }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="ev.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Date</dt><dd class="col-sm-9">{{ ev.date | date }}</dd>
+        <dt class="col-sm-3">Attendees</dt><dd class="col-sm-9">{{ ev.attendeeCount ?? '—' }}</dd>
+        <dt class="col-sm-3">Budget spent</dt><dd class="col-sm-9">{{ ev.budgetSpent != null ? (ev.budgetSpent | number: '1.0-2') : '—' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card shadow-sm mb-4" *appHasRole="['EMPLOYEE']">
+    <div class="card-body">
+      <h3 class="h5 mb-3">Participation</h3>
+      <p class="text-muted small">Register your attendance, or cancel a previous registration.</p>
+      <button class="btn btn-primary me-2" [disabled]="participationBusy()" (click)="participate()">
+        <i class="bi bi-check-circle me-1"></i> Participate
+      </button>
+      <button class="btn btn-outline-danger" [disabled]="participationBusy()" (click)="cancelParticipation()">
+        <i class="bi bi-x-circle me-1"></i> Cancel participation
+      </button>
+    </div>
+  </div>
+
+  @if (participants(); as ps) {
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="h5 mb-3">Participants</h3>
+        @if (ps.length === 0) {
+          <app-empty-state title="No participants recorded" icon="bi-person-lines-fill"></app-empty-state>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Registered on</th></tr>
+              </thead>
+              <tbody>
+                @for (p of ps; track p.employeeId) {
+                  <tr>
+                    <td>{{ p.employeeName }}</td>
+                    <td class="text-muted">{{ p.employeeEmail }}</td>
+                    <td>{{ p.registrationDate | date }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+}
+
+<app-confirm-modal
+  [open]="confirmingDelete()"
+  title="Delete event"
+  [message]="'Delete ' + (event()?.eventName || 'this event') + '? This cannot be undone.'"
+  confirmText="Delete"
+  confirmColor="danger"
+  (confirm)="confirmDelete()"
+  (cancel)="confirmingDelete.set(false)"
+></app-confirm-modal>

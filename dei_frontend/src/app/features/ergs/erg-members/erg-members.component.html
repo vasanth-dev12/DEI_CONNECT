@@ -1,0 +1,67 @@
+<app-page-header title="ERG members" subtitle="Manage membership roles and status">
+  <a [routerLink]="['/ergs', id()]" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No members yet" icon="bi-people"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Employee ID</th><th>Role</th><th>Join date</th><th>Status</th>
+                <th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (m of p.content; track m.membershipId) {
+                <tr>
+                  <td>{{ m.employeeId }}</td>
+                  <td>{{ m.role | enumLabel }}</td>
+                  <td>{{ m.joinDate | date }}</td>
+                  <td><app-status-badge [status]="m.status"></app-status-badge></td>
+                  <td class="text-end">
+                    <button *appHasRole="['ERG_LEAD']" class="btn btn-sm btn-outline-primary" (click)="startEdit(m)">
+                      <i class="bi bi-pencil"></i>
+                    </button>
+                  </td>
+                </tr>
+                @if (editingId() === m.membershipId) {
+                  <tr>
+                    <td colspan="5">
+                      <form [formGroup]="editForm" (ngSubmit)="saveEdit(m)" class="row g-2 align-items-end" novalidate>
+                        <div class="col-md-4">
+                          <label class="form-label small mb-0">Role *</label>
+                          <select class="form-select form-select-sm" formControlName="role">
+                            @for (r of membershipRoles; track r) { <option [value]="r">{{ r | enumLabel }}</option> }
+                          </select>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label small mb-0">Status *</label>
+                          <select class="form-select form-select-sm" formControlName="status">
+                            @for (s of membershipStatuses; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+                          </select>
+                        </div>
+                        <div class="col-md-4 text-end">
+                          <button type="submit" class="btn btn-sm btn-primary me-1" [disabled]="saving()">Save</button>
+                          <button type="button" class="btn btn-sm btn-outline-secondary" (click)="cancelEdit()">Cancel</button>
+                        </div>
+                      </form>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

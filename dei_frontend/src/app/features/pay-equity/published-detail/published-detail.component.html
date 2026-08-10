@@ -1,0 +1,64 @@
+<app-page-header title="Published analysis details">
+  <a routerLink="/pay-equity/published" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</app-page-header>
+
+@if (analysis(); as a) {
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-cash-coin"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ a.analysisPeriod }}</h2>
+          <span class="text-muted">{{ a.dimension | enumLabel }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="a.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Control variables</dt><dd class="col-sm-9">{{ controlVariablesLabel(a) }}</dd>
+        <dt class="col-sm-3">Median gap %</dt><dd class="col-sm-9">{{ a.medianGapPercent === null ? '—' : (a.medianGapPercent | number: '1.0-2') + '%' }}</dd>
+        <dt class="col-sm-3">Adjusted gap %</dt><dd class="col-sm-9">{{ a.adjustedGapPercent === null ? '—' : (a.adjustedGapPercent | number: '1.0-2') + '%' }}</dd>
+        <dt class="col-sm-3">Significance level</dt><dd class="col-sm-9">{{ a.significanceLevel === null ? '—' : (a.significanceLevel | number: '1.0-3') }}</dd>
+        <dt class="col-sm-3">Created</dt><dd class="col-sm-9">{{ a.createdDate | date: 'medium' }}</dd>
+        <dt class="col-sm-3">Last modified</dt><dd class="col-sm-9">{{ a.lastModifiedDate | date: 'medium' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h3 class="h5 mb-3">Pay gap flags</h3>
+      <p class="text-muted small">Some figures may be suppressed where the affected group is too small to protect individual privacy.</p>
+
+      @if (flags(); as fl) {
+        @if (fl.length === 0) {
+          <app-empty-state title="No pay gap flags recorded" icon="bi-flag"></app-empty-state>
+        } @else {
+          <div class="table-responsive">
+            <table class="table table-hover align-middle">
+              <thead>
+                <tr>
+                  <th>Group</th><th>Gap %</th><th>Affected Employees</th><th>Status</th><th></th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (f of fl; track f.id) {
+                  <tr>
+                    <td>{{ f.groupName }}</td>
+                    <td>{{ f.suppressed || f.gapPercent === null ? '—' : (f.gapPercent | number: '1.0-2') + '%' }}</td>
+                    <td>{{ f.suppressed || f.affectedEmployeeCount === null ? '—' : f.affectedEmployeeCount }}</td>
+                    <td><app-status-badge [status]="f.status"></app-status-badge></td>
+                    <td>
+                      @if (f.suppressed) {
+                        <span class="badge rounded-pill text-bg-secondary">Suppressed</span>
+                      }
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      }
+    </div>
+  </div>
+}

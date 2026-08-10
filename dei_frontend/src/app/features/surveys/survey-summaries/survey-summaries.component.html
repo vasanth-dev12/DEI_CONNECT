@@ -1,0 +1,61 @@
+<app-page-header title="Survey summaries">
+  <a [routerLink]="['/surveys', id()]" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to survey</a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No summaries available" icon="bi-bar-chart"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Scope</th><th>Scope value</th><th>Respondents</th>
+                <th>Inclusion index</th><th>Status</th><th>Suppressed</th><th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sm of p.content; track sm.summaryId) {
+                <tr>
+                  <td>{{ sm.scope | enumLabel }}</td>
+                  <td>{{ sm.scopeValue || '—' }}</td>
+                  <td>{{ sm.respondentCount ?? '—' }}</td>
+                  <td>
+                    @if (sm.suppressed || sm.inclusionIndex === null) {
+                      —
+                    } @else {
+                      {{ sm.inclusionIndex | number: '1.0-2' }}
+                    }
+                  </td>
+                  <td><app-status-badge [status]="sm.status"></app-status-badge></td>
+                  <td>
+                    @if (sm.suppressed) {
+                      <span class="badge text-bg-warning">Suppressed (below threshold)</span>
+                    } @else {
+                      <span class="text-muted">No</span>
+                    }
+                  </td>
+                  <td class="text-end">
+                    @if (sm.status === 'COMPUTED' && !sm.suppressed) {
+                      <button *appHasRole="['DEI_MANAGER', 'ADMIN']" class="btn btn-sm btn-outline-success" (click)="publish(sm)">
+                        <i class="bi bi-megaphone me-1"></i> Publish
+                      </button>
+                    } @else {
+                      <span class="text-muted">—</span>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

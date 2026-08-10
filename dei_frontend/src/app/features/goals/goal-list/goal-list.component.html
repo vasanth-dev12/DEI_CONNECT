@@ -1,0 +1,66 @@
+<app-page-header title="DEI Goals" subtitle="Diversity, equity and inclusion goals tracked across the organisation">
+  <a *appHasRole="['DEI_MANAGER']" routerLink="/goals/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New goal
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="dimensionFilter" (change)="reload(0)">
+          <option [ngValue]="null">All dimensions</option>
+          @for (d of allDimensions; track d) { <option [ngValue]="d">{{ d | enumLabel }}</option> }
+        </select>
+      </div>
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of allStatuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No goals found" icon="bi-bullseye"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Goal Name</th><th>Dimension</th><th>Target Group</th><th>Baseline</th>
+                <th>Target</th><th>Target Year</th><th>Status</th><th class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of p.content; track g.goalId) {
+                <tr>
+                  <td>{{ g.goalName }}</td>
+                  <td>{{ g.dimension | enumLabel }}</td>
+                  <td>{{ g.targetGroup || '—' }}</td>
+                  <td>{{ g.baselineValue | number }}</td>
+                  <td>{{ g.targetValue | number }}</td>
+                  <td>{{ g.targetYear }}</td>
+                  <td><app-status-badge [status]="g.status"></app-status-badge></td>
+                  <td class="text-end">
+                    <a [routerLink]="['/goals', g.goalId]" class="btn btn-sm btn-outline-secondary me-1">
+                      <i class="bi bi-eye"></i>
+                    </a>
+                    <a *appHasRole="['DEI_MANAGER']" [routerLink]="['/goals', g.goalId, 'edit']" class="btn btn-sm btn-outline-primary">
+                      <i class="bi bi-pencil"></i>
+                    </a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

@@ -1,0 +1,60 @@
+<div class="row g-3 mb-3">
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="My Groups" [value]="myErgs().length" icon="bi-diagram-3" color="primary" link="/ergs"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Total Members" [value]="totalMembers()" icon="bi-people" color="info" link="/ergs"
+    ></app-stat-card>
+  </div>
+</div>
+
+@if (myErgs().length === 0) {
+  <app-empty-state title="No chapters assigned yet" icon="bi-diagram-3"></app-empty-state>
+} @else {
+  <div class="row g-3 mb-3">
+    @for (erg of myErgs(); track erg.ergId) {
+      <div class="col-sm-6 col-lg-4">
+        <div class="card shadow-sm h-100">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-start">
+              <h2 class="h5 mb-1">{{ erg.ergName }}</h2>
+              <app-status-badge [status]="erg.status"></app-status-badge>
+            </div>
+            <div class="text-muted small mb-2">{{ erg.focus | enumLabel }}</div>
+            <div class="small">Members: {{ erg.memberCount }}</div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-transparent">Upcoming Events</div>
+    <div class="card-body">
+      @if (events().length === 0) {
+        <app-empty-state title="No upcoming events" icon="bi-calendar-event"></app-empty-state>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr><th>Event</th><th>Type</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              @for (e of events(); track e.eventId) {
+                <tr>
+                  <td>{{ e.eventName }}</td>
+                  <td>{{ e.eventType | enumLabel }}</td>
+                  <td>{{ e.date | date: 'mediumDate' }}</td>
+                  <td><app-status-badge [status]="e.status"></app-status-badge></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+}

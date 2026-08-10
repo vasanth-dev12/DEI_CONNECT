@@ -1,0 +1,60 @@
+<app-page-header [title]="isEdit() ? 'Edit ERG' : 'New ERG'"
+  [subtitle]="isEdit() ? 'Update this employee resource group' : 'Create a new employee resource group'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Group name *</label>
+          <input class="form-control" formControlName="ergName" [class.is-invalid]="invalid('ergName')" />
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Focus *</label>
+          <select class="form-select" formControlName="focus">
+            @for (f of focuses; track f) { <option [value]="f">{{ f | enumLabel }}</option> }
+          </select>
+        </div>
+        <div class="col-12">
+          <label class="form-label">Mission</label>
+          <textarea class="form-control" rows="3" formControlName="mission"></textarea>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">ERG lead *</label>
+          <select class="form-select" formControlName="ergLeadId" [class.is-invalid]="invalid('ergLeadId')">
+            <option [ngValue]="null">Select an ERG lead…</option>
+            @for (u of ergLeads(); track u.userId) { <option [ngValue]="u.userId">{{ u.name }} ({{ u.employeeId }})</option> }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Executive sponsor</label>
+          <select class="form-select" formControlName="executiveSponsorId">
+            <option [ngValue]="null">None</option>
+            @for (u of executives(); track u.userId) { <option [ngValue]="u.userId">{{ u.name }} ({{ u.employeeId }})</option> }
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label">Founded date</label>
+          <input type="date" class="form-control" formControlName="foundedDate" />
+        </div>
+        @if (isEdit()) {
+          <div class="col-md-6">
+            <label class="form-label">Status *</label>
+            <select class="form-select" formControlName="status">
+              @for (s of statuses; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+            </select>
+          </div>
+        }
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create group' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

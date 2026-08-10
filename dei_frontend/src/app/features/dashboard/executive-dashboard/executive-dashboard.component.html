@@ -1,0 +1,40 @@
+<div class="row g-3">
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Employees" [value]="totalEmployees()" icon="bi-people" color="primary"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Surveys" [value]="totalSurveys()" icon="bi-clipboard-data" color="info"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="ERG Groups" [value]="totalErgs()" icon="bi-diagram-3" color="success" link="/ergs"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Goals" [value]="totalGoals()" icon="bi-bullseye" color="warning"
+    ></app-stat-card>
+  </div>
+</div>
+
+<div class="row g-3 mt-1">
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Published Reports" [value]="publishedReports()" icon="bi-file-earmark-bar-graph" color="dark" link="/reports"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Pay Equity" value="View" icon="bi-cash-coin" color="secondary" link="/pay-equity/published"
+    ></app-stat-card>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <app-stat-card
+      label="Diversity Snapshots" value="View" icon="bi-bar-chart-steps" color="secondary" link="/diversity/snapshots"
+    ></app-stat-card>
+  </div>
+</div>

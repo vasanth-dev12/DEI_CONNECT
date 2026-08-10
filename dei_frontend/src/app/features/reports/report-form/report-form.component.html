@@ -1,0 +1,66 @@
+<app-page-header [title]="isEdit() ? 'Edit report' : 'New report'"
+  [subtitle]="isEdit() ? 'Update scope and metrics for this report' : 'Define scope and metrics for a new DEI report'">
+  <button class="btn btn-outline-secondary" (click)="cancel()"><i class="bi bi-x-lg me-1"></i> Cancel</button>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <form [formGroup]="form" (ngSubmit)="save()" novalidate>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label">Scope *</label>
+          <select class="form-select" formControlName="scope" [class.is-invalid]="invalid('scope')">
+            @for (s of scopes; track s) { <option [value]="s">{{ s | enumLabel }}</option> }
+          </select>
+        </div>
+        @if (currentScope() !== 'ORGANISATION') {
+          <div class="col-md-6">
+            @if (currentScope() === 'DEPARTMENT') {
+              <label class="form-label">Department *</label>
+              <select class="form-select" formControlName="scopeValue" [class.is-invalid]="invalid('scopeValue')">
+                <option [ngValue]="''">Select a department…</option>
+                @for (o of deptOptions(); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            } @else if (currentScope() === 'GRADE') {
+              <label class="form-label">Grade *</label>
+              <select class="form-select" formControlName="scopeValue" [class.is-invalid]="invalid('scopeValue')">
+                <option [ngValue]="''">Select a grade…</option>
+                @for (o of gradeOptions(); track o.value) { <option [ngValue]="o.value">{{ o.label }}</option> }
+              </select>
+            } @else if (currentScope() === 'PERIOD') {
+              <label class="form-label">Period</label>
+              <input class="form-control" formControlName="scopeValue" placeholder="e.g. 2026-H1" />
+              <div class="form-text">Free-text period label (not yet reflected in the live dashboard data).</div>
+            }
+          </div>
+        }
+
+        <div class="col-12">
+          <label class="form-label d-block">Metrics *</label>
+          @for (m of metrics; track m) {
+            <div class="form-check form-check-inline">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                [id]="'metric-' + m"
+                [checked]="selectedMetrics().has(m)"
+                (change)="toggleMetric(m, $event)"
+              />
+              <label class="form-check-label" [for]="'metric-' + m">{{ m | enumLabel }}</label>
+            </div>
+          }
+          @if (metricsTouched() && !metricsValid()) {
+            <div class="text-danger small mt-1">Select at least one metric.</div>
+          }
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button type="submit" class="btn btn-primary" [disabled]="saving()">
+          @if (saving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ isEdit() ? 'Save changes' : 'Create report' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

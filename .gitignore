@@ -1,0 +1,109 @@
+# ---------------------------------------------------------------------------
+# DEI Connect — repository ignores
+# Layout: dei_backend (Maven multi-module, Java 17 / Spring Boot) + dei_frontend (Angular)
+# ---------------------------------------------------------------------------
+
+# =====================  SENSITIVE — never commit  ==========================
+# Database dumps contain bcrypt password hashes and salary figures, so they must
+# never reach a remote. The old db_backup_before_wipe/ folder has been deleted;
+# these patterns stop an equivalent dump being added back by accident.
+db_backup_before_wipe/
+*.sql
+*.sql.gz
+*.dump
+*.bak
+
+# Local environment overrides and credentials.
+.env
+.env.*
+!.env.example
+*.p12
+*.jks
+*.pem
+*.key
+secrets.properties
+application-local.properties
+application-local.yml
+application-secret*.properties
+
+# =====================  Java / Maven  ======================================
+target/
+build/
+!**/src/**/target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+!.mvn/wrapper/maven-wrapper.jar
+hs_err_pid*
+replay_pid*
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# Surefire / failsafe output lives under target/, but keep these for safety.
+**/surefire-reports/
+**/failsafe-reports/
+**/generated-sources/
+**/generated-test-sources/
+
+# =====================  Node / Angular  ====================================
+node_modules/
+dei_frontend/dist/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.npm/
+.eslintcache
+.stylelintcache
+
+# Angular test / coverage output
+coverage/
+karma-results/
+*.lcov
+
+# =====================  IDE / editor  ======================================
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse / VS Code Java
+.settings/
+.classpath
+.project
+.factorypath
+bin/
+
+# VS Code — ignore personal settings, keep shared task/launch config if added
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
+
+# Claude Code — machine-local tooling state
+.claude/
+
+# =====================  Logs & runtime  ====================================
+*.log
+logs/
+*.pid
+*.seed
+*.pid.lock
+
+# =====================  OS noise  ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/

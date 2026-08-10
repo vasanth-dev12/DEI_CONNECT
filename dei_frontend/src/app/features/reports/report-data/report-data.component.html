@@ -1,0 +1,96 @@
+<app-page-header title="Report data" subtitle="Computed metrics for this DEI report">
+  <a routerLink="/reports" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+</app-page-header>
+
+@if (report(); as r) {
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="fs-2 text-primary"><i class="bi bi-file-earmark-bar-graph"></i></div>
+        <div>
+          <h2 class="h5 mb-0">{{ r.scope | enumLabel }}</h2>
+          <span class="text-muted">{{ r.scopeValue || 'Organisation-wide' }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="r.status"></app-status-badge></div>
+      </div>
+      <div class="mb-2">
+        @for (m of r.metrics; track m) {
+          <span class="badge rounded-pill text-bg-light text-dark border me-1">{{ m | enumLabel }}</span>
+        }
+      </div>
+      <div class="text-muted small">Generated {{ r.generatedDate | date: 'medium' }}</div>
+    </div>
+  </div>
+}
+
+@if (data(); as d) {
+  <div class="row g-3 mb-3">
+    @if (d.inclusionIndex != null) {
+      <div class="col-sm-6 col-lg-3">
+        <app-stat-card label="Inclusion Index" [value]="formatNumber(d.inclusionIndex)" icon="bi-heart" color="primary"></app-stat-card>
+      </div>
+    }
+    @if (d.ergMembershipRate != null) {
+      <div class="col-sm-6 col-lg-3">
+        <app-stat-card label="ERG Membership Rate" [value]="formatPercent(d.ergMembershipRate)" icon="bi-diagram-3" color="success"></app-stat-card>
+      </div>
+    }
+    @if (d.goalAttainmentRate != null) {
+      <div class="col-sm-6 col-lg-3">
+        <app-stat-card label="Goal Attainment Rate" [value]="formatPercent(d.goalAttainmentRate)" icon="bi-bullseye" color="warning"></app-stat-card>
+      </div>
+    }
+    @if (d.payEquityGap != null) {
+      <div class="col-sm-6 col-lg-3">
+        <app-stat-card label="Pay Equity Gap" [value]="formatPercent(d.payEquityGap)" icon="bi-cash-coin" color="danger"></app-stat-card>
+      </div>
+    }
+  </div>
+
+  @if (d.representation && d.representation.length > 0) {
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h2 class="h6 text-muted mb-3">Representation by dimension</h2>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th>Dimension</th><th>Group Name</th><th>Count</th>
+                <th style="min-width: 220px;">Diversity</th><th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of d.representation; track $index) {
+                <tr>
+                  <td>{{ s.dimension | enumLabel }}</td>
+                  <td>
+                    {{ s.groupName }}
+                    @if (s.suppressed) {
+                      <span class="badge rounded-pill text-bg-secondary ms-1">suppressed</span>
+                    }
+                  </td>
+                  <td>{{ s.suppressed || s.count === null ? '—' : s.count }}</td>
+                  <td>
+                    @if (s.suppressed || s.percentage === null) {
+                      —
+                    } @else {
+                      <div class="d-flex align-items-center gap-2">
+                        <div class="progress flex-grow-1" style="height: 8px;">
+                          <div class="progress-bar" role="progressbar" [style.width.%]="s.percentage"></div>
+                        </div>
+                        <span class="small text-nowrap">{{ s.percentage | number: '1.0-2' }}%</span>
+                      </div>
+                    }
+                  </td>
+                  <td><app-status-badge [status]="s.status"></app-status-badge></td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  } @else {
+    <app-empty-state title="No representation data" icon="bi-bar-chart" message="This report does not include representation-by-dimension data."></app-empty-state>
+  }
+}

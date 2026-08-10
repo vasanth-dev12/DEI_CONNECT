@@ -1,0 +1,65 @@
+<app-page-header title="Survey details">
+  <a routerLink="/surveys" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+  <a *appHasRole="['DEI_MANAGER']" [routerLink]="['/surveys', id(), 'questions']" class="btn btn-outline-primary">
+    <i class="bi bi-list-check me-1"></i> My questions
+  </a>
+  <a *appHasRole="['ADMIN']" [routerLink]="['/surveys', id(), 'questions']" class="btn btn-outline-primary">
+    <i class="bi bi-list-check me-1"></i> Review questions
+  </a>
+  <a *appHasRole="['DEI_MANAGER', 'EXECUTIVE', 'ADMIN']" [routerLink]="['/surveys', id(), 'summaries']" class="btn btn-primary">
+    <i class="bi bi-bar-chart me-1"></i> View summaries
+  </a>
+</app-page-header>
+
+@if (survey(); as s) {
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-clipboard-data"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ s.surveyName }}</h2>
+          <span class="text-muted">{{ s.surveyType | enumLabel }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="s.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Audience</dt><dd class="col-sm-9">All employees</dd>
+        <dt class="col-sm-3">Anonymised</dt><dd class="col-sm-9">{{ s.anonymised ? 'Yes' : 'No' }}</dd>
+        <dt class="col-sm-3">Min response threshold</dt><dd class="col-sm-9">{{ s.minResponseThreshold }}</dd>
+        <dt class="col-sm-3">Launch date</dt><dd class="col-sm-9">{{ s.launchDate | date: 'mediumDate' }}</dd>
+        <dt class="col-sm-3">Close date</dt><dd class="col-sm-9">{{ s.closeDate | date: 'mediumDate' }}</dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header">Questions</div>
+    <div class="card-body">
+      @if (orderedQuestions().length === 0) {
+        <p class="text-muted mb-0">No questions have been added to this survey yet.</p>
+      } @else {
+        <div class="table-responsive">
+          <table class="table table-hover align-middle">
+            <thead>
+              <tr>
+                <th style="width: 5rem">Q. No.</th>
+                <th>Question</th><th>Answer type</th><th>Dimension</th><th>Mandatory</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (q of orderedQuestions(); track q.questionId; let i = $index) {
+                <tr>
+                  <td class="text-muted">{{ i + 1 }}</td>
+                  <td>{{ q.questionText }}</td>
+                  <td>{{ q.questionType | enumLabel }}</td>
+                  <td>{{ q.dimension | enumLabel }}</td>
+                  <td>{{ q.mandatory ? 'Yes' : 'No' }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  </div>
+}

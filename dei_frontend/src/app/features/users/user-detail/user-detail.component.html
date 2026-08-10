@@ -1,0 +1,36 @@
+<app-page-header title="User details">
+  <a routerLink="/users" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back</a>
+  <a *appHasRole="['ADMIN']" [routerLink]="['/users', id(), 'edit']" class="btn btn-primary">
+    <i class="bi bi-pencil me-1"></i> Edit
+  </a>
+</app-page-header>
+
+@if (user(); as u) {
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div class="fs-1 text-primary"><i class="bi bi-person-circle"></i></div>
+        <div>
+          <h2 class="h4 mb-0">{{ u.name }}</h2>
+          <span class="text-muted">{{ u.email }}</span>
+        </div>
+        <div class="ms-auto"><app-status-badge [status]="u.status"></app-status-badge></div>
+      </div>
+      <dl class="row">
+        <dt class="col-sm-3">Employee ID</dt><dd class="col-sm-9">{{ u.employeeId }}</dd>
+        <dt class="col-sm-3">Role</dt><dd class="col-sm-9">{{ u.role | roleLabel }}</dd>
+        <dt class="col-sm-3">Department</dt><dd class="col-sm-9">{{ (u.departmentName | enumLabel) || '—' }}</dd>
+        <dt class="col-sm-3">Department ID</dt><dd class="col-sm-9">{{ u.departmentId ?? '—' }}</dd>
+        <dt class="col-sm-3">Grade ID</dt><dd class="col-sm-9">{{ u.gradeId ?? '—' }}</dd>
+        <dt class="col-sm-3">Years of experience</dt><dd class="col-sm-9">{{ u.yearsOfExperience ?? '—' }}</dd>
+        @if (u.salary != null) {
+          <dt class="col-sm-3">Salary</dt><dd class="col-sm-9">{{ u.salary | number: '1.2-2' }}</dd>
+        }
+        <dt class="col-sm-3">Manager</dt><dd class="col-sm-9">{{ u.managerName || '—' }}</dd>
+        <dt class="col-sm-3">HR Partner</dt><dd class="col-sm-9">{{ u.hrName || '—' }}</dd>
+        <dt class="col-sm-3">Created</dt><dd class="col-sm-9">{{ u.createdDate | date: 'medium' }}</dd>
+        <dt class="col-sm-3">Last modified</dt><dd class="col-sm-9">{{ u.lastModifiedDate | date: 'medium' }}</dd>
+      </dl>
+    </div>
+  </div>
+}

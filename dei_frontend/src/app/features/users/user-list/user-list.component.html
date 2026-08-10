@@ -1,0 +1,94 @@
+<app-page-header
+  title="Users"
+  [subtitle]="roleFilter ? 'Showing ' + label(roleFilter) + ' only' : 'Directory of platform users'"
+>
+  <a *appHasRole="['ADMIN']" routerLink="/users/new" class="btn btn-primary">
+    <i class="bi bi-plus-lg me-1"></i> New user
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-sm-6 col-md-4">
+        <label class="form-label small text-muted mb-1">Filter by role</label>
+        <select class="form-select" [(ngModel)]="roleFilter" (change)="onRoleFilterChange()">
+          <option [ngValue]="null">All roles</option>
+          @for (r of allRoles; track r) { <option [ngValue]="r">{{ label(r) }}</option> }
+        </select>
+      </div>
+      @if (page(); as p) {
+        <div class="col-sm-6 col-md-8 text-sm-end text-muted small">
+          <i class="bi bi-people me-1"></i>{{ p.totalElements }} user(s)
+        </div>
+      }
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="No users found" icon="bi-people"></app-empty-state>
+      } @else {
+        <div class="table-responsive table-scroll border rounded">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th scope="col" class="text-nowrap">Employee ID</th>
+                <th scope="col">Name</th>
+                <th scope="col">Email</th>
+                <th scope="col">Role</th>
+                <th scope="col">Department</th>
+                <th scope="col">Status</th>
+                <th scope="col" class="text-end">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (u of p.content; track u.userId) {
+                <tr>
+                  <td class="text-nowrap"><span class="badge text-bg-light border">{{ u.employeeId }}</span></td>
+                  <td class="fw-semibold">{{ u.name }}</td>
+                  <td class="text-muted text-truncate" style="max-width: 220px;" [title]="u.email">{{ u.email }}</td>
+                  <td class="text-nowrap">{{ u.role | roleLabel }}</td>
+                  <td class="text-nowrap">{{ (u.departmentName | enumLabel) || '—' }}</td>
+                  <td><app-status-badge [status]="u.status"></app-status-badge></td>
+                  <td class="text-end text-nowrap">
+                    <div class="btn-group btn-group-sm" role="group">
+                      <a [routerLink]="['/users', u.userId]" class="btn btn-outline-secondary" title="View">
+                        <i class="bi bi-eye"></i>
+                      </a>
+                      <a *appHasRole="['ADMIN']" [routerLink]="['/users', u.userId, 'edit']" class="btn btn-outline-primary" title="Edit">
+                        <i class="bi bi-pencil"></i>
+                      </a>
+                      <button
+                        *appHasRole="['ADMIN']"
+                        class="btn btn-outline-danger"
+                        [disabled]="u.status === 'INACTIVE'"
+                        (click)="askDeactivate(u)"
+                        title="Deactivate"
+                      >
+                        <i class="bi bi-person-x"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>
+
+<app-confirm-modal
+  [open]="!!toDeactivate()"
+  title="Deactivate user"
+  [message]="'Set ' + (toDeactivate()?.name || '') + ' to INACTIVE? This is a soft delete and preserves history.'"
+  confirmText="Deactivate"
+  confirmColor="danger"
+  (confirm)="confirmDeactivate()"
+  (cancel)="toDeactivate.set(null)"
+></app-confirm-modal>

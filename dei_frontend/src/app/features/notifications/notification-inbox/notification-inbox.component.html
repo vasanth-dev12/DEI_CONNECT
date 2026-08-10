@@ -1,0 +1,60 @@
+<app-page-header title="Notifications" subtitle="Stay up to date on activity that involves you">
+  <button class="btn btn-outline-secondary" (click)="markAllRead()">
+    <i class="bi bi-check2-all me-1"></i> Mark all read
+  </button>
+  <a *appHasRole="['ADMIN']" routerLink="/notifications/emit" class="btn btn-primary">
+    <i class="bi bi-send me-1"></i> Emit notification
+  </a>
+</app-page-header>
+
+<div class="card shadow-sm">
+  <div class="card-body">
+    <div class="row g-2 mb-3">
+      <div class="col-sm-6 col-md-4">
+        <select class="form-select" [(ngModel)]="statusFilter" (change)="reload(0)">
+          <option [ngValue]="null">All statuses</option>
+          @for (s of allStatuses; track s) { <option [ngValue]="s">{{ s | enumLabel }}</option> }
+        </select>
+      </div>
+    </div>
+
+    @if (page(); as p) {
+      @if (p.content.length === 0) {
+        <app-empty-state title="You're all caught up" icon="bi-bell-slash"></app-empty-state>
+      } @else {
+        <div class="list-group list-group-flush">
+          @for (n of p.content; track n.notificationId) {
+            <div class="list-group-item" [class.bg-light]="n.status === 'UNREAD'">
+              <div class="d-flex justify-content-between align-items-start gap-2">
+                <div class="flex-grow-1">
+                  <div class="mb-1">
+                    <span class="badge text-bg-secondary me-2">{{ n.category | enumLabel }}</span>
+                    <app-status-badge [status]="n.status"></app-status-badge>
+                  </div>
+                  <p class="mb-1" [class.fw-bold]="n.status === 'UNREAD'">{{ n.message }}</p>
+                  <small class="text-muted">{{ n.createdDate | date: 'medium' }}</small>
+                </div>
+                <div class="d-flex flex-column flex-sm-row gap-1">
+                  @if (n.status === 'UNREAD') {
+                    <button class="btn btn-sm btn-outline-primary" (click)="markRead(n)">
+                      <i class="bi bi-check-lg"></i> Mark read
+                    </button>
+                  }
+                  @if (n.status !== 'DISMISSED') {
+                    <button class="btn btn-sm btn-outline-secondary" (click)="dismiss(n)">
+                      <i class="bi bi-x-lg"></i> Dismiss
+                    </button>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+        <app-paginator
+          [page]="p.number" [totalPages]="p.totalPages" [totalElements]="p.totalElements"
+          (pageChange)="reload($event)"
+        ></app-paginator>
+      }
+    }
+  </div>
+</div>

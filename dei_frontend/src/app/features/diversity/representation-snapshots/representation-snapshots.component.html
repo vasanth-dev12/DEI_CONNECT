@@ -85,10 +85,15 @@
           <table class="table table-hover align-middle">
             <thead>
               <tr>
-                <th>Date</th><th>Dimension</th><th>Department</th>
+                <th>Date</th>
+                <th>Dimension</th>
+                <th>Department</th>
                 <th class="text-center">Head count</th>
                 <th>Diversity</th>
-                @if (!isPublishedOnlyView) { <th>Status</th> }
+                @if (!isPublishedOnlyView) 
+                { 
+                  <th>Status</th> 
+                }
                 <th class="text-end">Actions</th>
               </tr>
             </thead>
@@ -203,8 +208,10 @@
             <table class="table table-sm align-middle mb-0">
               <thead>
                 <tr>
-                  <th>Group</th><th class="text-center">Head count</th>
-                  <th style="min-width: 240px">Diversity</th><th class="text-end">%</th>
+                  <th>Group</th>
+                  <th class="text-center">Head count</th>
+                  <th style="min-width: 240px">Diversity</th>
+                  <th class="text-end">%</th>
                 </tr>
               </thead>
               <tbody>

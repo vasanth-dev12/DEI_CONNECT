@@ -30,7 +30,7 @@ export class DiversityService {
 
   updateOwnProfile(body: DemographicProfileRequest): Observable<DemographicProfileResponse> {
     return this.http.put<DemographicProfileResponse>(apiUrl(API.demographicProfiles.me), body);
-  }
+  } 
 
   generate(body: GenerateSnapshotRequest): Observable<GenerateSnapshotResult> {
     return this.http.post<GenerateSnapshotResult>(apiUrl(API.snapshots.generate), body);

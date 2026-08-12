@@ -43,7 +43,7 @@ export class MyDemographicProfileComponent implements OnInit {
     disability: ['PREFER_NOT_TO_SAY', [Validators.required]],
     veteranStatus: ['PREFER_NOT_TO_SAY', [Validators.required]],
     ageGroup: ['PREFER_NOT_TO_SAY', [Validators.required]],
-    consentStatus: ['CONSENTED', [Validators.required]],
+    consentStatus: ['DECLINED', [Validators.required]],
   });
 
   ngOnInit(): void {

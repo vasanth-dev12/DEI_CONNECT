@@ -14,7 +14,11 @@
         <label class="form-label small text-muted mb-1">Filter by role</label>
         <select class="form-select" [(ngModel)]="roleFilter" (change)="onRoleFilterChange()">
           <option [ngValue]="null">All roles</option>
-          @for (r of allRoles; track r) { <option [ngValue]="r">{{ label(r) }}</option> }
+          @for (r of allRoles; track r) {
+             <option [ngValue]="r">
+              {{ label(r) }}
+            </option> 
+            }
         </select>
       </div>
       @if (page(); as p) {

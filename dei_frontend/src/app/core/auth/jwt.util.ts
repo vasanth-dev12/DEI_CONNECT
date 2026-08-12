@@ -7,7 +7,6 @@ export interface JwtPayload {
   iat?: number;
   [k: string]: unknown;
 }
-
 export function decodeJwt(token: string): JwtPayload | null {
   try {
     const segments = token.split('.');

@@ -104,7 +104,9 @@ export class GoalFormComponent implements OnInit {
         targetYear: formValue.targetYear!,
       };
       this.goals.create(body).subscribe({
-        next: () => { this.toast.success('Goal created.'); this.router.navigate(['/goals']); },
+        next: () => { this.toast.success('Goal created.'); 
+                      this.router.navigate(['/goals']);
+                    },
         error: () => this.saving.set(false),
       });
     }

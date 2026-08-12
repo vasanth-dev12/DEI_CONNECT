@@ -2,7 +2,6 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-
 import { AuthService } from '../../../core/auth/auth.service';
 import { DiversityService } from '../../../core/services/diversity.service';
 import { ToastService } from '../../../core/services/toast.service';
@@ -90,11 +89,9 @@ export class RepresentationSnapshotsComponent implements OnInit {
       this.isGenerateModalOpen.set(true);
     }
     this.reloadSnapshots(0);
-  }
+  } 
 
   reloadSnapshots(pageIndex: number): void {
-    console.log("drop down selected " , this.dimensionFilter);
-    console.log("drop down selected" , this.departmentFilter);
     this.currentPageIndex = pageIndex;
     const pageParams = { page: pageIndex, size: 10, sort: 'snapshotDate,desc' };
     const filterParams = {
@@ -107,7 +104,6 @@ export class RepresentationSnapshotsComponent implements OnInit {
       .listSnapshotRuns(pageParams, filterParams)
       .subscribe((pagedResult) => {
         this.snapshotPage.set(pagedResult);
-        console.log(pagedResult);
       });
   }
 

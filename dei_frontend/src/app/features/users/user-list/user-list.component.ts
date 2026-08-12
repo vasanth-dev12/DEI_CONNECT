@@ -60,11 +60,14 @@ export class UserListComponent implements OnInit {
     });
   }
 
-  label(role: Role): string { return roleLabel(role); }
+  label(role: Role): string { 
+    return roleLabel(role); 
+  }
 
   reload(pageIndex: number): void {
     this.currentPage = pageIndex;
-    this.users.list({ page: pageIndex, size: 10, sort: 'name,asc' }, this.roleFilter).subscribe((pagedResult) => this.page.set(pagedResult));
+    this.users.list({ page: pageIndex, size: 10, sort: 'name,asc' }, this.roleFilter)
+    .subscribe((pagedResult) => this.page.set(pagedResult));
   }
 
   askDeactivate(user: UserResponse): void {
